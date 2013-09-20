@@ -10,8 +10,8 @@ namespace Options
             return new Option<T>(false, value);
         }
 
-        public static Option<T> None<T>() {
-            return Option<T>.None<T>();
+        public static Option<object> None() {
+            return Option<object>.None<object>();
         }
     }
 
@@ -26,11 +26,11 @@ namespace Options
         }
 
         public bool IsDefined {
-            get { return _isEmpty; }
+            get { return !_isEmpty; }
         }
 
-        public bool isEmpty {
-            get { return !_isEmpty; }
+        public bool IsEmpty {
+            get { return _isEmpty; }
         }
 
         public U flatMap<U>(Func<T, U> some) {
@@ -41,8 +41,8 @@ namespace Options
             return foldOver(s => Option.Some(some(s)), None<U>);
         }
 
-        public T flatten() {
-            return foldOver(s => s, () => default(T));
+        public T flatten {
+            get { return flatSome(); }
         }
 
         public void forEach(Action<T> a) {
@@ -58,7 +58,7 @@ namespace Options
         }
 
         public bool forAll(Func<T, bool> func) {
-            return !isEmpty || func(_value);
+            return IsEmpty || func(_value);
         }
 
         public T getOrElse(Func<T> none) {
@@ -66,19 +66,23 @@ namespace Options
         }
 
         public T valueOr(Func<T> or) {
-            return isEmpty ? or() : _value;
+            return IsEmpty ? or() : _value;
         }
 
         public Option<T> orElse(Func<Option<T>> other) {
-            return isEmpty ? other() : this;
+            return IsEmpty ? other() : this;
         }
 
         private U foldOver<U>(Func<T, U> some, Func<U> none) {
-            return IsDefined ? none() : some(_value);
+            return IsEmpty ? none() : some(_value);
         }
 
         public static Option<U> None<U>() {
             return new Option<U>(true, default(U));
+        }
+
+        private T flatSome() {
+            return foldOver(s => s, () => default(T));
         }
 
         private T Value {
@@ -91,9 +95,9 @@ namespace Options
 
         private class OptionEnumerator : IEnumerator<T>
         {
-            private bool _initialized = true;
+            private bool _reset = true;
             private readonly Option<T> _current;
-            private Option<T> _next;
+            private Option<T> _last;
 
             internal OptionEnumerator(Option<T> current) {
                 _current = current;
@@ -102,18 +106,18 @@ namespace Options
             public void Dispose() {}
 
             public void Reset() {
-                _initialized = true;
+                _reset = true;
             }
 
             public bool MoveNext() {
-                if (_initialized) {
-                    _next = _current;
-                    _initialized = false;
+                if (_reset) {
+                    _last = _current;
+                    _reset = false;
                 }
                 else
-                    _next = None<T>();
+                    _last = None<T>();
 
-                return !_next.IsDefined;
+                return !_last.IsEmpty;
             }
 
             T IEnumerator<T>.Current {
