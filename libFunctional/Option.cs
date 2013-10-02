@@ -2,16 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Options
+namespace libFunctional
 {
     public class Option
     {
-        public static Option<T> Some<T>(T value) {
+        public static Option<T> Some<T>(T value)
+        {
             return new Option<T>(false, value);
         }
 
-        public static Option<object> None() {
+        public static Option<object> None()
+        {
             return Option<object>.None<object>();
+        }
+
+        public static Option<T> None<T>()
+        {
+            return new Option<T>(true, default(T));
         }
     }
 
@@ -20,33 +27,41 @@ namespace Options
         private readonly bool _isEmpty;
         private readonly T _value;
 
-        internal Option(bool empty, T value) {
+        internal Option(bool empty, T value)
+        {
             _isEmpty = empty;
             _value = value;
         }
 
-        public bool IsDefined {
+        public bool IsDefined
+        {
             get { return !_isEmpty; }
         }
 
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get { return _isEmpty; }
         }
 
-        public U flatMap<U>(Func<T, U> some) {
+        public U flatMap<U>(Func<T, U> some)
+        {
             return foldOver(some, () => default(U));
         }
 
-        public Option<U> map<U>(Func<T, U> some) {
+        public Option<U> map<U>(Func<T, U> some)
+        {
             return foldOver(s => Option.Some(some(s)), None<U>);
         }
 
-        public T flatten {
+        public T flatten
+        {
             get { return flatSome(); }
         }
 
-        public void forEach(Action<T> a) {
-            foreach (var x in this) {
+        public void forEach(Action<T> a)
+        {
+            foreach (var x in this)
+            {
                 a(x);
             }
         }
@@ -57,36 +72,45 @@ namespace Options
             return foldOver(a => p(a) ? self : None<T>(), None<T>);
         }
 
-        public bool forAll(Func<T, bool> func) {
+        public bool forAll(Func<T, bool> func)
+        {
             return IsEmpty || func(_value);
         }
 
-        public T getOrElse(Func<T> none) {
+        public T getOrElse(Func<T> none)
+        {
             return foldOver(s => s, none);
         }
 
-        public T valueOr(Func<T> or) {
+        public T valueOr(Func<T> or)
+        {
             return IsEmpty ? or() : _value;
         }
 
-        public Option<T> orElse(Func<Option<T>> other) {
+        public Option<T> orElse(Func<Option<T>> other)
+        {
             return IsEmpty ? other() : this;
         }
 
-        private U foldOver<U>(Func<T, U> some, Func<U> none) {
+        public U foldOver<U>(Func<T, U> some, Func<U> none)
+        {
             return IsEmpty ? none() : some(_value);
         }
 
-        public static Option<U> None<U>() {
+        public static Option<U> None<U>()
+        {
             return new Option<U>(true, default(U));
         }
 
-        private T flatSome() {
+        private T flatSome()
+        {
             return foldOver(s => s, () => default(T));
         }
 
-        private T Value {
-            get {
+        private T Value
+        {
+            get
+            {
                 if (_isEmpty)
                     throw new Exception("Value on empty Option");
                 return _value;
@@ -99,18 +123,22 @@ namespace Options
             private readonly Option<T> _current;
             private Option<T> _last;
 
-            internal OptionEnumerator(Option<T> current) {
+            internal OptionEnumerator(Option<T> current)
+            {
                 _current = current;
             }
 
-            public void Dispose() {}
+            public void Dispose() { }
 
-            public void Reset() {
+            public void Reset()
+            {
                 _reset = true;
             }
 
-            public bool MoveNext() {
-                if (_reset) {
+            public bool MoveNext()
+            {
+                if (_reset)
+                {
                     _last = _current;
                     _reset = false;
                 }
@@ -120,11 +148,13 @@ namespace Options
                 return !_last.IsEmpty;
             }
 
-            T IEnumerator<T>.Current {
+            T IEnumerator<T>.Current
+            {
                 get { return _current.Value; }
             }
 
-            public object Current {
+            public object Current
+            {
                 get { return _current.Value; }
             }
         }

@@ -1,12 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using NUnit.Framework;
 
-namespace Options.Tests
+namespace libFunctional.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class OptionTests
     {
-        [TestMethod]
-        public void testIsDefined() {
+        [Test]
+        public void testIsDefined()
+        {
             var something = Option.Some(42);
             Assert.IsTrue(something.IsDefined);
 
@@ -14,8 +20,9 @@ namespace Options.Tests
             Assert.IsFalse(nothing.IsDefined);
         }
 
-        [TestMethod]
-        public void testIsEmpty() {
+        [Test]
+        public void testIsEmpty()
+        {
             var something = Option.Some(42);
             Assert.IsFalse(something.IsEmpty);
 
@@ -23,25 +30,28 @@ namespace Options.Tests
             Assert.IsTrue(nothing.IsEmpty);
         }
 
-        [TestMethod]
-        public void testFlatmap() {
+        [Test]
+        public void testFlatmap()
+        {
             var something = Option.Some(42);
-            var result = something.flatMap(s => s*2);
+            var result = something.flatMap(s => s * 2);
 
             Assert.AreEqual(result, 84);
         }
 
-        [TestMethod]
-        public void testMap() {
+        [Test]
+        public void testMap()
+        {
             var something = Option.Some(42);
-            var result = something.map(s => s*2);
+            var result = something.map(s => s * 2);
 
-            Assert.IsInstanceOfType(result, typeof (Option<int>));
+            Assert.IsInstanceOf<Option<int>>(result);
             Assert.AreEqual(result.flatten, 84);
         }
 
-        [TestMethod]
-        public void testFlatten() {
+        [Test]
+        public void testFlatten()
+        {
             var something = Option.Some(42);
 
             Assert.IsNotNull(something);
@@ -49,8 +59,9 @@ namespace Options.Tests
             Assert.AreEqual(42, something.flatten);
         }
 
-        [TestMethod]
-        public void testForEach() {
+        [Test]
+        public void testForEach()
+        {
             var something = Option.Some(42);
 
             var i = 24;
@@ -59,8 +70,9 @@ namespace Options.Tests
             Assert.AreEqual(42, i);
         }
 
-        [TestMethod]
-        public void testForAll() {
+        [Test]
+        public void testForAll()
+        {
             var something = Option.Some(42);
 
             var result = something.forAll(s => s == 42);
@@ -70,8 +82,9 @@ namespace Options.Tests
             Assert.IsFalse(result);
         }
 
-        [TestMethod]
-        public void testGetOrElse() {
+        [Test]
+        public void testGetOrElse()
+        {
             var something = Option.Some(42);
 
             var result = something.getOrElse(() => 24);
@@ -84,8 +97,9 @@ namespace Options.Tests
             Assert.AreNotEqual(42, result);
         }
 
-        [TestMethod]
-        public void testValueOr() {
+        [Test]
+        public void testValueOr()
+        {
             var something = Option.Some(42);
 
             var result = something.valueOr(() => 24);
@@ -93,18 +107,20 @@ namespace Options.Tests
             Assert.AreNotEqual(24, result);
 
             var nothing = Option.None();
-            result = (int) nothing.getOrElse(() => 24);
+            result = (int)nothing.getOrElse(() => 24);
             Assert.AreEqual(24, result);
         }
 
-        [TestMethod]
-        public void testOrElse() {
+        [Test]
+        public void testOrElse()
+        {
             /**
              * Some 
              */
             var something = Option.Some(42);
             var result = something.orElse(() => Option.Some(24));
-            Assert.IsInstanceOfType(result, typeof (Option<int>));
+
+            Assert.IsInstanceOf<Option<int>>(result);
 
             Assert.IsTrue(result.IsDefined);
             Assert.AreEqual(42, result.flatten);
@@ -115,57 +131,63 @@ namespace Options.Tests
              */
 
             var nothing = Option.None();
-            var otherResult = nothing.orElse(() => Option.Some((object) 42));
+            var otherResult = nothing.orElse(() => Option.Some((object)42));
 
-            Assert.IsInstanceOfType(otherResult, typeof (Option<object>));
+            Assert.IsInstanceOf<Option<object>>(otherResult);
 
             Assert.IsTrue(otherResult.IsDefined);
             Assert.AreEqual(42, (int)otherResult.flatten);
-            Assert.AreNotEqual(24, (int) otherResult.flatten);
+            Assert.AreNotEqual(24, (int)otherResult.flatten);
         }
 
-        [TestMethod]
-        public void testNoneCompanionObject() {
+        [Test]
+        public void testNoneCompanionObject()
+        {
             var nothing = Option.None();
 
             Assert.IsTrue(nothing.IsEmpty);
             Assert.IsFalse(nothing.IsDefined);
         }
 
-        [TestMethod]
-        public void testSomeCompanionObject() {
+        [Test]
+        public void testSomeCompanionObject()
+        {
             var something = Option.Some("Hello World");
 
             Assert.IsTrue(something.IsDefined);
             Assert.IsFalse(something.IsEmpty);
         }
 
-        [TestMethod]
-        public void testCanIterateOverOption() {
+        [Test]
+        public void testCanIterateOverOption()
+        {
             var something = Option.Some(42);
 
-            foreach (var some in something) {
+            foreach (var some in something)
+            {
                 Assert.AreEqual(42, some);
             }
         }
 
-        [TestMethod]
-        public void testWhere() {
+        [Test]
+        public void testWhere()
+        {
             var something = Option.Some(42);
             var result = something.where(i => i == 42);
 
             Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result, typeof (Option<int>));
+            Assert.IsInstanceOf<Option<int>>(result);
             Assert.AreEqual(42, result.flatten);
 
             var otherResult = something.where(i => i == 24);
             Assert.IsNotNull(otherResult);
-            Assert.IsInstanceOfType(result, typeof (Option<int>));
+            Assert.IsInstanceOf<Option<int>>(result);
             Assert.IsTrue(otherResult.IsEmpty);
         }
-        
-        [TestMethod]
-        public void testCompanionObjects() {
+
+        [Test]
+        public void testCompanionObjects()
+        {
             var something = Option.Some(42);
 
             Assert.IsNotNull(something);
